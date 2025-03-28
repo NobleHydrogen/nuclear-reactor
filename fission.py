@@ -6,43 +6,45 @@ from utilities import *
 
 class Fission(Scene):
     def construct(self):
-        duration = 5
+        duration = 600
 
         #URANIUM
-        rows = 11
+        rows = 13
         cols = 24
         uranium_spacing = .4
 
         uranium = create_uranium_grid(rows, cols, uranium_spacing)
         
         #NEUTRON
-        velocity = 0.02
-        initial_angle = -PI/2
-        initial_position = np.array([-0.6, 5, 0])
+        velocity = 0.01
+        initial_angle = -PI/2 - 0.1
+        initial_position = np.array([-1, 3, 0])
         neutron_spacing = .6
-        number_of_initial_neutrons = 0
+        number_of_initial_neutrons = 1
 
         neutrons = [create_neutron(initial_position - np.array([0,neutron_spacing*i,0]), initial_angle, velocity) for i in range(number_of_initial_neutrons)]
 
+        #MODERATOR
+        group_size = 4
+        number_of_mod = cols // group_size + 1
+        mod_init_pos = 0
+        mod_pos = get_moderator_positions(uranium, cols, mod_init_pos, uranium_spacing, group_size, number_of_mod)
+        moderators = [create_moderator(rows, uranium_spacing, mod_pos[i]) for i in range(number_of_mod)]
+
         #CONTROL ROD
-        cr_group_size = 4
-        number_of_cr = cols // cr_group_size + 1
+        
+        number_of_cr = cols // group_size
         #number_of_cr = 0
-        cr_vel = 0.005
-        off_set = 0.005
+        cr_vel = 0.001
+        off_set = 0.00
         control_rod_velocity = [cr_vel + (i*off_set) for i in range(number_of_cr)]
         direction = -PI / 2
-        cr_init_pos = 0
+        cr_init_pos = rows / 2
 
-        cr_pos = get_control_rod_positions(uranium, cols, cr_init_pos, uranium_spacing, cr_group_size, number_of_cr)
+        cr_pos = get_control_rod_positions(mod_pos, number_of_cr , uranium_spacing, group_size, cr_init_pos)
         control_rods = [create_control_rod(rows, uranium_spacing, cr_pos[i], control_rod_velocity, i) for i in range(number_of_cr)]
         
-        #MODERATOR
-        mod_group_size = 4
-        number_of_mod = cols // mod_group_size
-
-        mod_pos = get_moderator_positions(cr_pos, number_of_mod, uranium_spacing, mod_group_size)
-        moderators = [create_moderator(rows, uranium_spacing, mod_pos[i]) for i in range(number_of_mod)]
+        
 
         self.add(*moderators)
         self.add(*control_rods)
@@ -68,16 +70,21 @@ class Fission(Scene):
 
             #neutron_count_text.become(Text(f"Fucking Neutrons: {len(neutrons)}").to_edge(LEFT+UP)).scale(.5)
 
-            for uranium_dot in uranium:
-                for neutron in neutrons:
+            
+            for neutron in neutrons:
 
-                    for control_rod in control_rods:
-                        if check_collision_cr(neutron, control_rod):
-                            self.remove(neutron)
-                            neutrons.remove(neutron)
-                            break
+                for control_rod in control_rods:
+                    if check_collision_cr(neutron, control_rod):
+                        self.remove(neutron)
+                        neutrons.remove(neutron)
+                        break
+                
+                for moderator in moderators:
+                    if check_moderator_collision(neutron, moderator):
+                        neutron = reflection(neutron)
+                        break
 
-
+                for uranium_dot in uranium:
                     if uranium_collision_detector(uranium_dot, neutron) == True:
 
                         neutron.set_color(GRAY)

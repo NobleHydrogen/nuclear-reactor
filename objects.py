@@ -17,7 +17,6 @@ def create_uranium_grid(rows, column, spacing):
 
 def create_neutron(position, angle, velocity):
     coin = np.random.randint(1,3)
-    coin = 1
     neutron_color = WHITE
     if coin == 1:
         velocity *= 2

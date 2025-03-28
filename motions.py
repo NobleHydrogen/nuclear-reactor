@@ -25,3 +25,13 @@ def move_control_rod(control_rods, direction, dt):
             prev_position = current_position - np.array([velocity * np.cos(direction), velocity * np.sin(direction), 0])
             new_position = get_new_position(current_position, prev_position, dt)
             control_rod.move_to(new_position)
+
+
+def reflection(neutron):
+    if neutron.angle > 0:
+        neutron.angle -= 2 * (PI/2 + neutron.angle)
+    else:
+        neutron.angle += 2 * (PI/2 -neutron.angle)
+    neutron.velocity /= 2
+    neutron.set_color(WHITE)
+    return neutron

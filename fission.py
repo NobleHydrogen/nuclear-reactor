@@ -6,10 +6,10 @@ from utilities import *
 
 class Fission(Scene):
     def construct(self):
-        duration = 300
+        duration = 100
 
-        rows = 5
-        cols = 4
+        rows = 3
+        cols = 10
         uranium_spacing = .6
 
         uranium = create_uranium_grid(rows, cols, uranium_spacing)
@@ -27,7 +27,7 @@ class Fission(Scene):
         number_of_cr = (cols - 2) // group_size
         #number_of_cr = 0
         cr_vel = 0.005
-        off_set = 0
+        off_set = 0.001
         control_rod_velocity = [cr_vel + (i*off_set) for i in range(number_of_cr)]
         direction = -PI / 2
 

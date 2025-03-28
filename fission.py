@@ -6,35 +6,45 @@ from utilities import *
 
 class Fission(Scene):
     def construct(self):
-        duration = 30
+        duration = 5
 
-        rows = 3
-        cols = 10
-        uranium_spacing = .6
+        #URANIUM
+        rows = 11
+        cols = 24
+        uranium_spacing = .4
 
         uranium = create_uranium_grid(rows, cols, uranium_spacing)
         
+        #NEUTRON
         velocity = 0.02
-        initial_angle = 0
-        initial_position = np.array([-6, 0, 0])
+        initial_angle = -PI/2
+        initial_position = np.array([-0.6, 5, 0])
         neutron_spacing = .6
-        number_of_initial_neutrons = 1
+        number_of_initial_neutrons = 0
 
         neutrons = [create_neutron(initial_position - np.array([0,neutron_spacing*i,0]), initial_angle, velocity) for i in range(number_of_initial_neutrons)]
 
-
-        group_size = 2
-        number_of_cr = (cols - 2) // group_size
+        #CONTROL ROD
+        cr_group_size = 4
+        number_of_cr = cols // cr_group_size + 1
         #number_of_cr = 0
         cr_vel = 0.005
-        off_set = 0.001
+        off_set = 0.005
         control_rod_velocity = [cr_vel + (i*off_set) for i in range(number_of_cr)]
         direction = -PI / 2
+        cr_init_pos = 0
 
-        cr_pos = get_control_rod_positions(uranium, cols, rows, uranium_spacing, group_size, number_of_cr)
+        cr_pos = get_control_rod_positions(uranium, cols, cr_init_pos, uranium_spacing, cr_group_size, number_of_cr)
         control_rods = [create_control_rod(rows, uranium_spacing, cr_pos[i], control_rod_velocity, i) for i in range(number_of_cr)]
         
+        #MODERATOR
+        mod_group_size = 4
+        number_of_mod = cols // mod_group_size
 
+        mod_pos = get_moderator_positions(cr_pos, number_of_mod, uranium_spacing, mod_group_size)
+        moderators = [create_moderator(rows, uranium_spacing, mod_pos[i]) for i in range(number_of_mod)]
+
+        self.add(*moderators)
         self.add(*control_rods)
         self.add(uranium)
         self.add(*neutrons)

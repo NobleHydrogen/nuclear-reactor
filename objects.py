@@ -17,6 +17,7 @@ def create_uranium_grid(rows, column, spacing):
 
 def create_neutron(position, angle, velocity):
     coin = np.random.randint(1,3)
+    coin = 1
     neutron_color = WHITE
     if coin == 1:
         velocity *= 2
@@ -35,5 +36,7 @@ def create_control_rod(rows, spacing, position, velocity, index):
     return cr
 
 
-def create_moderator():
-    pass
+def create_moderator(rows, spacing, position):
+    mod = Rectangle(height = rows * spacing, width = 0.01, color = WHITE).move_to(position)
+
+    return mod

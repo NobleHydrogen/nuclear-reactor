@@ -6,7 +6,7 @@ from utilities import *
 
 class Fission(Scene):
     def construct(self):
-        duration = 300
+        duration = 30
 
         rows = 5
         cols = 4

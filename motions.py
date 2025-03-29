@@ -18,9 +18,10 @@ def get_new_position(current_position, prev_position, dt):
 
 
 def move_control_rod(control_rods, direction, dt):
+    count = 0
     for control_rod in control_rods:
-        if control_rod.get_center()[1] > 0:
-            velocity = control_rod.velocity
+        velocity = control_rod.velocity
+        if control_rod.get_center()[1] > 1:
             current_position = control_rod.get_center()
             prev_position = current_position - np.array([velocity * np.cos(direction), velocity * np.sin(direction), 0])
             new_position = get_new_position(current_position, prev_position, dt)

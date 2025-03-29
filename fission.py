@@ -6,23 +6,23 @@ from utilities import *
 
 class Fission(Scene):
     def construct(self):
-        duration = 600
+        duration = 1200
 
         #URANIUM
-        rows = 13
-        cols = 24
-        uranium_spacing = .4
+        rows = 9
+        cols = 16
+        uranium_spacing = .5
 
         uranium = create_uranium_grid(rows, cols, uranium_spacing)
         
         #NEUTRON
         velocity = 0.01
-        initial_angle = -PI/2 - 0.1
-        initial_position = np.array([-1, 3, 0])
-        neutron_spacing = .6
-        number_of_initial_neutrons = 1
+        initial_angle = 0
+        initial_position = np.array([-6, 0, 0])
+        neutron_spacing = 1
+        number_of_initial_neutrons = 2
 
-        neutrons = [create_neutron(initial_position - np.array([0,neutron_spacing*i,0]), initial_angle, velocity) for i in range(number_of_initial_neutrons)]
+        neutrons = [create_neutron(initial_position + np.array([neutron_spacing*i,0,0]), initial_angle, velocity, flag = 0) for i in range(number_of_initial_neutrons)]
 
         #MODERATOR
         group_size = 4
@@ -35,11 +35,11 @@ class Fission(Scene):
         
         number_of_cr = cols // group_size
         #number_of_cr = 0
-        cr_vel = 0.001
-        off_set = 0.00
+        cr_vel = 0.005
+        off_set = 0.001
         control_rod_velocity = [cr_vel + (i*off_set) for i in range(number_of_cr)]
         direction = -PI / 2
-        cr_init_pos = rows / 2
+        cr_init_pos = rows / 2 + 2
 
         cr_pos = get_control_rod_positions(mod_pos, number_of_cr , uranium_spacing, group_size, cr_init_pos)
         control_rods = [create_control_rod(rows, uranium_spacing, cr_pos[i], control_rod_velocity, i) for i in range(number_of_cr)]
@@ -51,8 +51,8 @@ class Fission(Scene):
         self.add(uranium)
         self.add(*neutrons)
 
-        # neutron_count_text = Text(f"Fucking Neutrons: {len(neutrons)}").to_edge(LEFT+UP).scale(.5)
-        # self.add(neutron_count_text)
+        #neutron_count_text = Text(f"Fucking Neutrons: {len(neutrons)}").to_edge(LEFT+UP).scale(.5)
+        #self.add(neutron_count_text)
 
         #nuclear_formula = MathTex(r"^{235}_{92}\text{U} + ^1_0\text{n} \longrightarrow \text{other shit} + 3\ ^1_0\text{n}").to_edge(DOWN)
         #self.play(Write(nuclear_formula))
@@ -72,6 +72,9 @@ class Fission(Scene):
 
             
             for neutron in neutrons:
+                if check_border(neutron):
+                    self.remove(neutron)
+                    neutrons.remove(neutron)
 
                 for control_rod in control_rods:
                     if check_collision_cr(neutron, control_rod):
@@ -85,6 +88,14 @@ class Fission(Scene):
                         break
 
                 for uranium_dot in uranium:
+                    # if uranium_dot.get_color() == GRAY:
+                    #     coin = np.random.randint(1,rows*cols)
+                    #     if coin == 3:
+                    #         angle = np.random.uniform(-PI, PI)
+                    #         spontaneous = create_neutron(uranium_dot.get_center(), angle, velocity)
+                    #         neutrons.extend(spontaneous)
+                    #         self.add(spontaneous)
+                    
                     if uranium_collision_detector(uranium_dot, neutron) == True:
 
                         neutron.set_color(GRAY)
@@ -94,7 +105,7 @@ class Fission(Scene):
                         angles = [np.random.uniform(-PI, PI) for _ in range(3)]
                         #angles = [-PI/4, 0, PI/4]
 
-                        new_neutrons = [create_neutron(uranium_dot.get_center(), angle, velocity) for angle in angles]
+                        new_neutrons = [create_neutron(uranium_dot.get_center(), angle, velocity, flag = 1) for angle in angles]
                         neutrons.extend(new_neutrons)
                         self.add(*new_neutrons)
                         
